@@ -145,16 +145,10 @@ if __name__ == '__main__':
     if args.show:
         plt.show()
     else:
-        plt.savefig(
-            'figures/EffAreaRelErr_z' + str(zenith) + '_index' + str(index) + '_' + args.mode + '.png',
-            format='png',
-            bbox_inches='tight'
-        )
-        plt.savefig(
-            'figures/EffAreaRelErr_z' + str(zenith) + '_index' + str(index) + '_' + args.mode + '.pdf',
-            format='pdf',
-            bbox_inches='tight'
-        )
+        figName = 'figures/EffAreaRelErr_z' + str(zenith) + '_index' + str(index) + '_' + args.mode
+        logging.info('Printing figures {}.pdf/png'.format(figName))
+        plt.savefig(figName + '.png', format='png', bbox_inches='tight')
+        plt.savefig(figName + '.pdf', format='pdf', bbox_inches='tight')
 
     # Effective Area
     fig = plt.figure(figsize=(8, 6), tight_layout=True)
@@ -181,14 +175,8 @@ if __name__ == '__main__':
     if args.show:
         plt.show()
     else:
-        binsLabel = '_bins' if args.mode == 'comparingBins' else ''
-        plt.savefig(
-            'figures/EffArea_z' + str(zenith) + '_index' + str(index) + '_' + args.mode + '.png',
-            format='png',
-            bbox_inches='tight'
-        )
-        plt.savefig(
-            'figures/EffArea_z' + str(zenith) + '_index' + str(index) + '_' + args.mode + '.pdf',
-            format='pdf',
-            bbox_inches='tight'
-        )
+        figName = 'figures/EffArea_z' + str(zenith) + '_index' + str(index) + '_' + args.mode
+        logging.info('Printing figures {}.pdf/png'.format(figName))
+        # binsLabel = '_bins' if args.mode == 'comparingBins' else ''
+        plt.savefig(figName + '.png', format='png', bbox_inches='tight')
+        plt.savefig(figName + '.pdf', format='pdf', bbox_inches='tight')
