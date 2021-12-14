@@ -30,7 +30,10 @@ if __name__ == '__main__':
     parser.add_argument(
         '-m',
         '--mode',
-        help='Mode: size, bins or rec',
+        help=(
+            'Mode: size (compares different number of events),'
+            'bins (compare different binning) or rec (compares rec and true energy)'
+        ),
         type=str,
         default='size',
         choices=['size', 'bins', 'rec']
@@ -43,9 +46,21 @@ if __name__ == '__main__':
         default=20,
         choices=[20, 40, 60]
     )
-    parser.add_argument('-i', '--index', help='Spectral index', type=float, default=2.0)
-    parser.add_argument('-n', '--size', help='List of log size', type=float, nargs='+',
-                        default=[8, 8.5, 9])
+    parser.add_argument(
+        '-i',
+        '--index',
+        help='Spectral index',
+        type=float,
+        default=2.0
+    )
+    parser.add_argument(
+        '-n',
+        '--size',
+        help='List of log size',
+        type=float,
+        nargs='+',
+        default=[8, 8.5, 9]
+    )
     parser.add_argument('-s', '--show', help='Show plots', action='store_true')
     args = parser.parse_args()
 
@@ -55,6 +70,14 @@ if __name__ == '__main__':
     index = args.index
 
     logELim = {20: [-1.8, 2.4], 40: [-1.6, 2.8], 60: [-1.2, 2.8]}
+    logging.warning('logELim hardcoded')
+
+    # Reporting input parameters
+    logging.info('Running eff_area with the following input parameters:')
+    logging.info('Mode (-m): {}'.format(args.mode))
+    logging.info('Spectral index (-i): {}'.format(args.index))
+    logging.info('Size (-n): {}'.format(args.size))
+    logging.info('Zenith angle (-z): {}'.format(args.zenith))
 
     def getLogEnergyBins(zenith, nBins):
         return np.linspace(
