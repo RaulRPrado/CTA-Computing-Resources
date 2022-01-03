@@ -1,16 +1,12 @@
 #!/usr/bin/python3
 
+import sys
+import logging
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-import numpy as np
-from math import pow, log10, sqrt, sin, pi
-import copy
-import logging
-import sys
 
-import ROOT
-
-from events import EventsMC
+from lib.events import EventsMC
 
 logging.getLogger().setLevel(logging.INFO)
 logging.basicConfig(format='%(levelname)s::%(module)s(l%(lineno)s)::%(funcName)s::%(message)s')

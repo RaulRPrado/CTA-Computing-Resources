@@ -8,6 +8,7 @@ dependencies:
   - pytest
   - pytest-cov
   - scipy
+  - seaborn
 # cheatsheet
 
 # create: conda env create -f environment.yml

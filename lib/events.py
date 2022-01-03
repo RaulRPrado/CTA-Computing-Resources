@@ -3,7 +3,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from math import pow, log10, sqrt, sin, pi
-import copy
 import logging
 from astropy.io import ascii
 from astropy.table import Table
@@ -557,8 +556,6 @@ class EventsMC:
         )
 
     def plotNtelescopes(self, **kwargs):
-
-        ax = plt.gca()
 
         minLgE = log10(min(self.dataTelescopes['energy_mc']))
         maxLgE = log10(max(self.dataTelescopes['energy_mc']))
