@@ -84,10 +84,11 @@ class EventsMC:
     }
     fileNameBDT = {
         'Paranal': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal20degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root'),
+            20: ('/lustre/fs22/group/cta/users/maierg/analysis/AnalysisData/prod5-Paranal-20deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/gamma_onSource.S-M6D1ag-14MSTs37SSTs-MSTF_ID0.eff-0.root'),
+            # 20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
+            #      'prod3b-paranal20degs05b-NN/EffectiveAreas/' +
+            #      'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
+            #      'BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root'),
             40: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
                  'prod3b-paranal40degs05b-NN/EffectiveAreas/' +
                  'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
@@ -167,7 +168,8 @@ class EventsMC:
         logEnergyBins=np.linspace(-1.4, 2.0, 50),
         BDTcuts=True,
         threshold=False,
-        test=False
+        test=False,
+        nMaxTest=1e5
     ):
         self.primary = primary
         self.site = site
@@ -182,6 +184,7 @@ class EventsMC:
             logging.info('BDTcuts on - nFiles set to 1')
         self.threshold = threshold
         self.test = test
+        self.nMaxTest = nMaxTest
         self.data = dict()
         self.dataTelescopes = dict()
 
@@ -211,8 +214,8 @@ class EventsMC:
         self.data['energy_rec'] = list()
         self.data['lge_mc'] = list()
         self.data['lge_rec'] = list()
-        self.data['radius_mc'] = list()
-        self.data['theta_mc'] = list()
+        # self.data['radius_mc'] = list()
+        # self.data['theta_mc'] = list()
         self.data['nshow'] = dict()
 
         self.dataTelescopes['energy_mc'] = list()
@@ -225,8 +228,8 @@ class EventsMC:
             self.data['energy_rec'].append(entry.ErecS)
             self.data['lge_mc'].append(log10(entry.MCe0))
             self.data['lge_rec'].append(log10(entry.ErecS))
-            self.data['radius_mc'].append(sqrt(entry.MCxcore**2 + entry.MCycore**2))
-            self.data['theta_mc'].append(sqrt(entry.MCxoff**2 + entry.MCyoff**2))
+            # self.data['radius_mc'].append(sqrt(entry.MCxcore**2 + entry.MCycore**2))
+            # self.data['theta_mc'].append(sqrt(entry.MCxoff**2 + entry.MCyoff**2))
 
         def collectEntryTelescope(entry):
             self.dataTelescopes['energy_mc'].append(entry.MCe0)
@@ -234,8 +237,11 @@ class EventsMC:
             self.dataTelescopes['n_mst'].append(entry.NImages_Ttype[1])
             self.dataTelescopes['n_lst'].append(entry.NImages_Ttype[2])
 
+        # def isEntryValid(entry):
+        #     return not (entry.ErecS < 0)
+
         def isEntryValid(entry):
-            return not (entry.ErecS < 0)
+            return not (entry.erec < 0)
 
         for n in range(self.nFiles):
             thrName = '-threshold' if self.threshold else ''
@@ -244,30 +250,51 @@ class EventsMC:
             elif self.primary == 'proton':
                 fileName = self.fileNameBDTProton[self.site][self.zenith]
 
+            logging.debug('Filename:: {}'.format(fileName))
+
             file = ROOT.TFile.Open(fileName)
             nSelected = 0
             badEvents = 0
             goodEvents = 0
-            for entry_data, entry_cuts in zip(file.data, file.fEventTreeCuts):
 
-                if not isEntryValid(entry_data):
+            # for entry_data, entry_cuts in zip(file.data, file.fEventTreeCuts):
+
+            #     if not isEntryValid(entry_data):
+            #         badEvents += 1
+            #         continue
+            #     goodEvents += 1
+
+            #     # telescope participation
+            #     collectEntryTelescope(entry_data)
+
+            #     if entry_cuts.CutClass == 5 or not self.BDTcuts:
+            #         collectEntry(entry_data)
+
+            #         # Filling in NSHOW data
+            #         if entry_data.MCe0 in self.data['nshow'].keys():
+            #             if entry_data.eventNumber not in self.data['nshow'][entry_data.MCe0]:
+            #                 self.data['nshow'][entry_data.MCe0].append(entry_data.eventNumber)
+            #         else:
+            #             self.data['nshow'][entry_data.MCe0] = [entry_data.eventNumber]
+
+            #         nSelected += 1
+
+            #     if self.test and nSelected > self.nMaxTest:
+            #         print('ratio {}'.format(badEvents / float(goodEvents)))
+            #         break
+
+            for entry in file.DL2EventTree:
+
+                if not isEntryValid(entry):
                     badEvents += 1
                     continue
                 goodEvents += 1
 
                 # telescope participation
-                collectEntryTelescope(entry_data)
+                # collectEntryTelescope(entry)
 
-                if entry_cuts.CutClass == 5 or not self.BDTcuts:
-                    collectEntry(entry_data)
-
-                    # Filling in NSHOW data
-                    if entry_data.MCe0 in self.data['nshow'].keys():
-                        if entry_data.eventNumber not in self.data['nshow'][entry_data.MCe0]:
-                            self.data['nshow'][entry_data.MCe0].append(entry_data.eventNumber)
-                    else:
-                        self.data['nshow'][entry_data.MCe0] = [entry_data.eventNumber]
-
+                if entry.CutClass == 5 or not self.BDTcuts:
+                    collectEntry(entry)
                     nSelected += 1
 
                 if self.test and nSelected > self.nMaxTest:

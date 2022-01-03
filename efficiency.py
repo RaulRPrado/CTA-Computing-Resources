@@ -24,9 +24,11 @@ if __name__ == '__main__':
     show = True if 'show' in sys.argv else False
     test = True if 'test' in sys.argv else False
 
-    site = 'LaPalma'
+    # site = 'LaPalma'
+    site = 'Paranal'
     threshold = [False, False, False, True]
-    zenithAll = [20, 40, 60, 20]
+    # zenithAll = [20, 40, 60, 20]
+    zenithAll = [20]
     colors = ['k', 'r', 'b', 'k']
     markers = ['o', '>', '^', 's']
     lge_min = {20: -1.8, 40: -1.6, 60: -1.2}
