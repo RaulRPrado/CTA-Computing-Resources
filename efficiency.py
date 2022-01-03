@@ -34,9 +34,9 @@ if __name__ == '__main__':
 
     events = list()
     for z, thr in zip(zenithAll, threshold):
-        range0 = np.linspace(lge_min[z], 1.0, (1.0 - lge_min[z]) * 20)
+        range0 = np.linspace(lge_min[z], 1.0, int((1.0 - lge_min[z]) * 20))
         range0 = np.delete(range0, [len(range0) - 1])
-        range1 = np.linspace(1.0, lge_max[z], (lge_max[z] - 1.0) * 10)
+        range1 = np.linspace(1.0, lge_max[z], int((lge_max[z] - 1.0) * 10))
         logEnergyBins = (np.concatenate((range0, range1), axis=0))
         # logEnergyBins = np.linspace(-1.4, 2.0, (2.0 + 1.4) * 20 + 1)
 
