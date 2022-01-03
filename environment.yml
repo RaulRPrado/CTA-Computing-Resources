@@ -1,0 +1,15 @@
+# A conda environment with all useful package for ctamclib developers
+name: cta-comp-resources
+dependencies:
+  - python<=3.8
+  - numpy
+  - astropy
+  - matplotlib
+  - pytest
+  - pytest-cov
+  - scipy
+# cheatsheet
+
+# create: conda env create -f environment.yml
+# activate: conda activate gammasim-tools-dev
+# update: conda env update -f environment.yml --prune
