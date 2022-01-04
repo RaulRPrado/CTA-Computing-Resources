@@ -225,9 +225,9 @@ class EventsMC:
 
         def collectEntry(entry):
             self.data['energy_mc'].append(entry.MCe0)
-            self.data['energy_rec'].append(entry.ErecS)
+            self.data['energy_rec'].append(entry.erec)
             self.data['lge_mc'].append(log10(entry.MCe0))
-            self.data['lge_rec'].append(log10(entry.ErecS))
+            self.data['lge_rec'].append(log10(entry.erec))
             # self.data['radius_mc'].append(sqrt(entry.MCxcore**2 + entry.MCycore**2))
             # self.data['theta_mc'].append(sqrt(entry.MCxoff**2 + entry.MCyoff**2))
 
@@ -293,12 +293,14 @@ class EventsMC:
                 # telescope participation
                 # collectEntryTelescope(entry)
 
-                if entry.CutClass == 5 or not self.BDTcuts:
+                # entry.CutClass is stored as an hex representation of a int
+                # We need the function chr to compare it with a int 5
+                if entry.CutClass == chr(5) or not self.BDTcuts:
                     collectEntry(entry)
                     nSelected += 1
 
                 if self.test and nSelected > self.nMaxTest:
-                    print('ratio {}'.format(badEvents / float(goodEvents)))
+                    print('RATIO {}'.format(badEvents / float(goodEvents)))
                     break
 
     def validateSite(self):
