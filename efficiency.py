@@ -50,7 +50,7 @@ if __name__ == '__main__':
             zenith=z,
             BDTcuts=True,
             site=site,
-            threshold=thr
+            nMaxTest=1e5
         )
         ev.loadTreeData()
 
@@ -115,6 +115,9 @@ if __name__ == '__main__':
     else:
         plt.savefig('figures/EfficiencyRelErr' + site + '.png', format='png', bbox_inches='tight')
         plt.savefig('figures/EfficiencyRelErr' + site + '.pdf', format='pdf', bbox_inches='tight')
+
+    # Not plotting resolutions by now
+    exit()
 
     ################
     # Energy Resolution

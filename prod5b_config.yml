@@ -1,0 +1,38 @@
+files:
+  directory: '/lustre/fs22/group/cta/users/maierg/analysis/AnalysisData/' 
+  gamma:
+    Paranal:
+      20: 'prod5-Paranal-20deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/gamma_onSource.S-M6D1ag-14MSTs37SSTs-MSTF_ID0.eff-0.root'
+
+scatRadius:
+  Paranal:
+    20: 2000.
+    40: 2400
+    60: 3000
+  LaPalma:
+    20: 1400
+    40: 1700
+    60: 2200
+
+fullEnergyRange:
+  Paranal:
+    20: [0.003, 330]
+    40: [0.006, 660]
+    60: [0.012, 990]
+  LaPalma:
+    20: [0.003, 330]
+    40: [0.006, 660]
+    60: [0.012, 990]
+
+viewCone: 10.
+    
+nShowersTotal:
+  Paranal:
+    20: 1.99e+9
+    40: 8.94e+8
+    60: 9.92e+8
+  LaPalma:
+    20: 9.25e+8
+    40: 1.06e+9
+    60: 9.97e+8
+

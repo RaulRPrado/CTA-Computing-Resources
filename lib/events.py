@@ -1,27 +1,27 @@
 #!/usr/bin/python3
 
-import matplotlib.pyplot as plt
 import numpy as np
-from math import pow, log10, sqrt, sin, pi
+import matplotlib.pyplot as plt
 import logging
+import seaborn as sns
+import yaml
+import scipy.stats
+from scipy.integrate import quad
+from math import pow, log10, sqrt, sin, pi
+
 from astropy.io import ascii
 from astropy.table import Table
-from scipy.integrate import quad
-import scipy.stats
-import seaborn as sns
 
 import ROOT
 
 logging.getLogger().setLevel(logging.DEBUG)
 logging.basicConfig(format='%(levelname)s::%(module)s(l%(lineno)s)::%(funcName)s::%(message)s')
 
-# test file: /lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/prod3b-paranal20degs05b-NN/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root
 
-
-def computeNorm(N, gamma, logEnergy0, logEnergyRange):
+def computeNorm(N, gamma, logEnergy0, energyRange):
     norm = N * (gamma - 1)
     en0 = pow(10, logEnergy0)
-    en = [pow(10, logEnergyRange[0]), pow(10, logEnergyRange[1])]
+    en = [energyRange[0], energyRange[1]]
     norm /= pow(en[0] / en0, -gamma + 1) - pow(en[1] / en0, -gamma + 1)
     return norm
 
@@ -59,104 +59,14 @@ def integrateGaussianPDF(mean, sig, x1, x2):
     return res
 
 
+def fileNameFromConfig(config, primary, site, zenith):
+    direc = config['files']['directory']
+    file = config['files'][primary][site][zenith]
+    return direc + '/' + file
+
+
 ########################################
 class EventsMC:
-    scatRadius = {
-        'Paranal': {20: 2500., 40: 2700, 60: 3400},
-        'LaPalma': {20: 1400, 40: 1600, 60: 2500}
-    }
-    fullEnergyRange = {
-        'Paranal': {
-            20: [log10(0.003), log10(330)],
-            40: [log10(0.006), log10(660)],
-            60: [log10(0.02), log10(660)]
-        },
-        'LaPalma': {
-            20: [log10(0.003), log10(330)],
-            40: [log10(0.006), log10(660)],
-            60: [log10(0.02), log10(660)]
-        }
-    }
-    viewCone = 10.
-    nShowersTotal = {
-        'Paranal': {20: 1.99e9, 40: 1.72e9, 60: 1.92e9},
-        'LaPalma': {20: 2.01e+9, 40: 1.33e+9, 60: 2.76e+9}
-    }
-    fileNameBDT = {
-        'Paranal': {
-            20: ('/lustre/fs22/group/cta/users/maierg/analysis/AnalysisData/prod5-Paranal-20deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/gamma_onSource.S-M6D1ag-14MSTs37SSTs-MSTF_ID0.eff-0.root'),
-            # 20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-            #      'prod3b-paranal20degs05b-NN/EffectiveAreas/' +
-            #      'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-            #      'BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root'),
-            40: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal40degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root'),
-            60: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal60degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/gamma_onSource.S.3HB9-FD_ID0.eff-0.root')
-        },
-        'LaPalma': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-20degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/gamma_onSource.Nb.3AL4-BN15_ID0.eff-0.root'),
-            40: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-40degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/gamma_onSource.Nb.3AL4-BF15_ID0.eff-0.root'),
-            60: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-60degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/gamma_onSource.Nb.3AL4-BN15_ID0.eff-0.root')
-        },
-        'Paranal-threshold': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/'
-                 'prod3b-paranal20degt05b-LL/EffectiveAreas/'
-                 'EffectiveArea-50h-ID4-NIM2LST4MST4SST4SCMST4-d20191012-V2-fullDataTree/'
-                 'BDT01.50h-V2-fullDataTree.d20191012/'
-                 'gamma_onSource.S.3HB9-P1-A1L-FG_ID4.eff-0.root')
-        },
-        'LaPalma-threshold': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/'
-                 'prod3b-LaPalma-20degt05b-LL/EffectiveAreas/'
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST4-d20191030-V2-fullDataTree/'
-                 'BDT06.50h-V2-fullDataTree.d20191030/gamma_onSource.Nb.3AL4-BN15_ID0.eff-0.root')
-        }
-    }
-
-    fileNameBDTProton = {
-        'Paranal': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal20degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/proton.S.3HB9-FD_ID0.eff-0.root'),
-            40: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal40degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/proton.S.3HB9-FD_ID0.eff-0.root'),
-            60: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-paranal60degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20181203-V2/' +
-                 'BDTFT.50h-V2.d20181203/proton.S.3HB9-FD_ID0.eff-0.root')
-        },
-        'LaPalma': {
-            20: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-20degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/proton.Nb.3AL4-BN15_ID0.eff-0.root'),
-            40: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-40degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/proton.Nb.3AL4-BN15_ID0.eff-0.root'),
-            60: ('/lustre/fs21/group/cta/users/maierg/analysis/AnalysisData/' +
-                 'prod3b-LaPalma-60degs05b-NN/EffectiveAreas/' +
-                 'EffectiveArea-50h-ID0-NIM2LST4MST4SST4SCMST2-d20191020-V2/' +
-                 'BDT06.50h-V2.d20191020/proton.Nb.3AL4-BN15_ID0.eff-0.root')
-        }
-    }
 
     def __init__(
         self,
@@ -167,9 +77,9 @@ class EventsMC:
         azimuth=0,
         logEnergyBins=np.linspace(-1.4, 2.0, 50),
         BDTcuts=True,
-        threshold=False,
         test=False,
-        nMaxTest=1e5
+        nMaxTest=1e2,
+        configFile='prod5b_config.yml'
     ):
         self.primary = primary
         self.site = site
@@ -182,13 +92,16 @@ class EventsMC:
         self.nFiles = 1 if self.BDTcuts else nFiles
         if self.BDTcuts:
             logging.info('BDTcuts on - nFiles set to 1')
-        self.threshold = threshold
         self.test = test
         self.nMaxTest = nMaxTest
         self.data = dict()
         self.dataTelescopes = dict()
 
         self.validateSite()
+
+        # Loading config file
+        with open(configFile, 'r') as stream:
+            self.config = yaml.safe_load(stream)
 
         self.logEnergyCenter = list()
         for i in range(len(self.logEnergyBins) - 1):
@@ -199,13 +112,13 @@ class EventsMC:
         self.energyEfficiencyIsLoaded = False
         self.energyResolutionIsLoaded = False
 
-        self.totalSim = self.nShowersTotal[self.site][self.zenith]
+        self.totalSim = self.config['nShowersTotal'][self.site][self.zenith]
 
         self.specNorm = computeNorm(
             N=self.totalSim,
             gamma=2,
             logEnergy0=self.logEnergy0,
-            logEnergyRange=self.fullEnergyRange[self.site][self.zenith]
+            energyRange=self.config['fullEnergyRange'][self.site][self.zenith]
         )
 
     def loadTreeData(self):
@@ -214,8 +127,6 @@ class EventsMC:
         self.data['energy_rec'] = list()
         self.data['lge_mc'] = list()
         self.data['lge_rec'] = list()
-        # self.data['radius_mc'] = list()
-        # self.data['theta_mc'] = list()
         self.data['nshow'] = dict()
 
         self.dataTelescopes['energy_mc'] = list()
@@ -228,8 +139,6 @@ class EventsMC:
             self.data['energy_rec'].append(entry.erec)
             self.data['lge_mc'].append(log10(entry.MCe0))
             self.data['lge_rec'].append(log10(entry.erec))
-            # self.data['radius_mc'].append(sqrt(entry.MCxcore**2 + entry.MCycore**2))
-            # self.data['theta_mc'].append(sqrt(entry.MCxoff**2 + entry.MCyoff**2))
 
         def collectEntryTelescope(entry):
             self.dataTelescopes['energy_mc'].append(entry.MCe0)
@@ -237,18 +146,12 @@ class EventsMC:
             self.dataTelescopes['n_mst'].append(entry.NImages_Ttype[1])
             self.dataTelescopes['n_lst'].append(entry.NImages_Ttype[2])
 
-        # def isEntryValid(entry):
-        #     return not (entry.ErecS < 0)
-
         def isEntryValid(entry):
             return not (entry.erec < 0)
 
         for n in range(self.nFiles):
-            thrName = '-threshold' if self.threshold else ''
-            if self.primary == 'gamma':
-                fileName = self.fileNameBDT[self.site + thrName][self.zenith]
-            elif self.primary == 'proton':
-                fileName = self.fileNameBDTProton[self.site][self.zenith]
+
+            fileName = fileNameFromConfig(self.config, self.primary, self.site, self.zenith)
 
             logging.debug('Filename:: {}'.format(fileName))
 
@@ -256,32 +159,6 @@ class EventsMC:
             nSelected = 0
             badEvents = 0
             goodEvents = 0
-
-            # for entry_data, entry_cuts in zip(file.data, file.fEventTreeCuts):
-
-            #     if not isEntryValid(entry_data):
-            #         badEvents += 1
-            #         continue
-            #     goodEvents += 1
-
-            #     # telescope participation
-            #     collectEntryTelescope(entry_data)
-
-            #     if entry_cuts.CutClass == 5 or not self.BDTcuts:
-            #         collectEntry(entry_data)
-
-            #         # Filling in NSHOW data
-            #         if entry_data.MCe0 in self.data['nshow'].keys():
-            #             if entry_data.eventNumber not in self.data['nshow'][entry_data.MCe0]:
-            #                 self.data['nshow'][entry_data.MCe0].append(entry_data.eventNumber)
-            #         else:
-            #             self.data['nshow'][entry_data.MCe0] = [entry_data.eventNumber]
-
-            #         nSelected += 1
-
-            #     if self.test and nSelected > self.nMaxTest:
-            #         print('ratio {}'.format(badEvents / float(goodEvents)))
-            #         break
 
             for entry in file.DL2EventTree:
 
@@ -300,7 +177,7 @@ class EventsMC:
                     nSelected += 1
 
                 if self.test and nSelected > self.nMaxTest:
-                    print('RATIO {}'.format(badEvents / float(goodEvents)))
+                    logging.debug('Test=True - Stopping early')
                     break
 
     def validateSite(self):
@@ -427,7 +304,7 @@ class EventsMC:
     def plotRadiusEfficiency(self, energyRange, **kwargs):
         logging.info('Plotting Radius Efficiency')
 
-        scatR = self.scatRadius[self.site][self.zenith]
+        scatR = self.config['scatRadius'][self.site][self.zenith]
         radiusBins = np.linspace(0, scatR, 50)
         # radiusBins = np.linspace(0, 200, 40)
         numberTrig = list()
@@ -470,7 +347,7 @@ class EventsMC:
     def plotThetaEfficiency(self, energyRange, **kwargs):
         logging.info('Plotting Theta Efficiency')
 
-        thetaBins = np.linspace(0, self.viewCone, 30)
+        thetaBins = np.linspace(0, self.config['viewCone'], 30)
         numberTrig = list()
         numberSim = list()
         thetaCenter = list()
@@ -494,7 +371,7 @@ class EventsMC:
             # number sim
             fracInTheta = (
                 sin(thetaBins[i + 1] * pi / 360)**2 - sin(thetaBins[i] * pi / 360)**2
-            ) / sin(self.viewCone * pi / 360)**2
+            ) / sin(self.config['viewCone'] * pi / 360)**2
 
             nSimInEnergy = powerLawIntegral(
                 norm=self.specNorm,
@@ -536,8 +413,6 @@ class EventsMC:
         self.meanNshow = list()
         self.histNshow = list()
         nshowBins = np.linspace(0.5, 10.5, 11)
-        logEnergyCenterPlot = list()
-        logEnergyBinPlot = list()
         for i in range(len(self.logEnergyCenter)):
             if len(nShowAll[i]) > 0:
                 self.meanNshow.append(np.mean(nShowAll[i]))
@@ -621,7 +496,7 @@ class EventsMC:
         tableData['sigma_en'] = self.sigmaEnergy
         tableData['delta_en'] = self.deltaEnergy
 
-        thrName = '-threshold' if self.threshold else ''
+        thrName = ''
         outName = (
             'data/eff_' + self.primary + '_' + self.site + thrName + '_z' + str(self.zenith) + '_az'
             + str(self.azimuth) + '.cvs'
@@ -631,23 +506,6 @@ class EventsMC:
 
 ########################################
 class EffectiveArea:
-    scatRadius = {
-        'Paranal': {20: 2500., 40: 2700, 60: 3400},
-        'LaPalma': {20: 1400, 40: 1600, 60: 2500}
-    }
-    fullEnergyRange = {
-        'Paranal': {
-            20: [log10(0.003), log10(330)],
-            40: [log10(0.006), log10(660)],
-            60: [log10(0.02), log10(660)]
-        },
-        'LaPalma': {
-            20: [log10(0.003), log10(330)],
-            40: [log10(0.006), log10(660)],
-            60: [log10(0.02), log10(660)]
-        }
-    }
-
     def __init__(
         self,
         N,
@@ -662,7 +520,7 @@ class EffectiveArea:
         label='None',
         useRecEnergy=True,
         useBias=True,
-        threshold=False
+        configFile='prod5b_config.yml'
     ):
         self.size = N
         self.index = index
@@ -676,12 +534,15 @@ class EffectiveArea:
         self.label = label
         self.useRecEnergy = useRecEnergy
         self.useBias = useBias
-        self.threshold = threshold
+
+        # Loading config file
+        with open(configFile, 'r') as stream:
+            self.config = yaml.safe_load(stream)
 
         self.computeEffArea()
 
     def computeEffArea(self):
-        thrName = '-threshold' if self.threshold else ''
+        thrName = ''
         fileName = (
             'data/eff_' + self.primary + '_' + self.site + thrName + '_z' + str(self.zenith) + '_az'
             + str(self.azimuth) + '.cvs'
@@ -692,13 +553,13 @@ class EffectiveArea:
             N=self.size,
             gamma=self.index,
             logEnergy0=0,
-            logEnergyRange=self.fullEnergyRange[self.site][self.zenith]
+            energyRange=self.config['fullEnergyRange'][self.site][self.zenith]
         )
         logging.warning('Energy range hardcoded')
         self.effArea = list()
         self.effAreaErr = list()
         self.logEnergy = list()
-        totArea = (self.scatRadius[self.site][self.zenith]**2) * pi
+        totArea = (self.config['scatRadius'][self.site][self.zenith]**2) * pi
         logging.warning('Scaterring radius hardcoded')
 
         self.numberSim = [0] * (len(self.logEnergyBins) - 1)
