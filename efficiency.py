@@ -24,8 +24,8 @@ if __name__ == '__main__':
     show = True if 'show' in sys.argv else False
     test = True if 'test' in sys.argv else False
 
-    # site = 'LaPalma'
-    site = 'Paranal'
+    site = 'LaPalma'
+    # site = 'Paranal'
     zenithAll = [20, 40, 60]
     array = 'alpha'
     colors = ['k', 'r', 'b', 'k']
