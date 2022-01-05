@@ -523,6 +523,7 @@ class EffectiveArea:
         logEnergyBins=np.linspace(-1.6, 2.0, int((2.0 + 1.6) * 5)),
         primary='gamma',
         site='Paranal',
+        array='alpha',
         zenith=20,
         azimuth=0,
         color='k',
@@ -544,6 +545,7 @@ class EffectiveArea:
         self.label = label
         self.useRecEnergy = useRecEnergy
         self.useBias = useBias
+        self.array = array
 
         # Loading config file
         with open(configFile, 'r') as stream:
@@ -666,9 +668,12 @@ class EffectiveArea:
 
     def plotEffAreaRelErr(self, **kwargs):
         ax = plt.gca()
+        lge_plot = [en for (en, ea) in zip(self.logEnergy, self.effArea) if ea > 0]
+        err_plot = [r / e for (e, r) in zip(self.effArea, self.effAreaErr) if e > 0]
+
         ax.plot(
-            self.logEnergy,
-            [r / e for (e, r) in zip(self.effArea, self.effAreaErr)],
+            lge_plot,
+            err_plot,
             color=self.color,
             marker=self.marker,
             label=self.label,

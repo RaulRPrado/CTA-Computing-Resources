@@ -169,11 +169,8 @@ if __name__ == '__main__':
     ylim = ax.get_ylim()
     ax.set_ylim(0, ylim[1])
 
-    if show:
-        plt.show()
-    else:
-        plt.savefig('figures/EnergyResolution' + site + '.png', format='png', bbox_inches='tight')
-        plt.savefig('figures/EnergyResolution' + site + '.pdf', format='pdf', bbox_inches='tight')
+    plt.savefig('figures/EnergyResolution' + site + '.png', format='png', bbox_inches='tight')
+    plt.savefig('figures/EnergyResolution' + site + '.pdf', format='pdf', bbox_inches='tight')
 
     ################
     # Energy Bias

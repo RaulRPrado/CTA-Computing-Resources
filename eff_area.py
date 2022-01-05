@@ -2,15 +2,8 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from math import pow, log10, sqrt, sin, pi
-import copy
 import logging
-import sys
-from astropy.io import ascii
-from astropy.table import Table
 import argparse
-
-import ROOT
 
 from lib.events import EffectiveArea
 
@@ -39,6 +32,22 @@ if __name__ == '__main__':
         choices=['size', 'bins', 'rec']
     )
     parser.add_argument(
+        '-s',
+        '--site',
+        help='Site: Paranal or LaPalma - Default: Paranal',
+        type=str,
+        default='Paranal',
+        choices=['Paranal', 'LaPalma']
+    )
+    parser.add_argument(
+        '-a',
+        '--array',
+        help='Array: alpha, alpha-SSTs, alpha-MSTs or alpha-LSTs',
+        type=str,
+        default='alpha',
+        choices=['alpha', 'alpha-SSTs', 'alpha-MSTs', 'alpha-LSTs']
+    )
+    parser.add_argument(
         '-z',
         '--zenith',
         help='Zenith: 20, 40 or 60',
@@ -61,7 +70,7 @@ if __name__ == '__main__':
         nargs='+',
         default=[8, 8.5, 9]
     )
-    parser.add_argument('-s', '--show', help='Show plots', action='store_true')
+    parser.add_argument('--show', help='Show plots', action='store_true')
     args = parser.parse_args()
 
     show = args.show
@@ -74,6 +83,8 @@ if __name__ == '__main__':
 
     # Reporting input parameters
     logging.info('Running eff_area with the following input parameters:')
+    logging.info('Site (-s): {}'.format(args.site))
+    logging.info('Array (-s): {}'.format(args.array))
     logging.info('Mode (-m): {}'.format(args.mode))
     logging.info('Spectral index (-i): {}'.format(args.index))
     logging.info('Size (-n): {}'.format(args.size))
@@ -99,6 +110,8 @@ if __name__ == '__main__':
                 N=s,
                 index=index,
                 zenith=zenith,
+                site=args.site,
+                array=args.array,
                 logEnergyBins=getLogEnergyBins(zenith, binsPerDecade),
                 color=c,
                 marker=m,
@@ -116,6 +129,8 @@ if __name__ == '__main__':
                 N=dataSize,
                 index=index,
                 zenith=zenith,
+                site=args.site,
+                array=args.array,
                 logEnergyBins=getLogEnergyBins(zenith, n),
                 color=c,
                 marker=m,
@@ -133,6 +148,8 @@ if __name__ == '__main__':
                 N=dataSize,
                 index=index,
                 zenith=zenith,
+                site=args.site,
+                array=args.array,
                 logEnergyBins=getLogEnergyBins(zenith, 5),
                 color=c,
                 marker=m,
@@ -168,7 +185,12 @@ if __name__ == '__main__':
     if args.show:
         plt.show()
     else:
-        figName = 'figures/EffAreaRelErr_z' + str(zenith) + '_index' + str(index) + '_' + args.mode
+        figName = (
+            'figures/EffAreaRelErr' + str(args.site)
+            + '_' + str(args.array)
+            + '_z' + str(zenith)
+            + '_index' + str(index) + '_' + args.mode
+        )
         logging.info('Printing figures {}.pdf/png'.format(figName))
         plt.savefig(figName + '.png', format='png', bbox_inches='tight')
         plt.savefig(figName + '.pdf', format='pdf', bbox_inches='tight')
@@ -198,7 +220,12 @@ if __name__ == '__main__':
     if args.show:
         plt.show()
     else:
-        figName = 'figures/EffArea_z' + str(zenith) + '_index' + str(index) + '_' + args.mode
+        figName = (
+            'figures/EffArea' + str(args.site)
+            + '_' + str(args.array)
+            + '_z' + str(zenith)
+            + '_index' + str(index) + '_' + args.mode
+        )
         logging.info('Printing figures {}.pdf/png'.format(figName))
         # binsLabel = '_bins' if args.mode == 'comparingBins' else ''
         plt.savefig(figName + '.png', format='png', bbox_inches='tight')
