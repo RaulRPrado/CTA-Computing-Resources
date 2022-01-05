@@ -26,16 +26,15 @@ if __name__ == '__main__':
 
     # site = 'LaPalma'
     site = 'Paranal'
-    threshold = [False, False, False, True]
-    # zenithAll = [20, 40, 60, 20]
-    zenithAll = [20]
+    zenithAll = [20, 40, 60]
+    array = 'alpha'
     colors = ['k', 'r', 'b', 'k']
     markers = ['o', '>', '^', 's']
     lge_min = {20: -1.8, 40: -1.6, 60: -1.2}
     lge_max = {20: 2.4, 40: 2.8, 60: 2.8}
 
     events = list()
-    for z, thr in zip(zenithAll, threshold):
+    for z in zenithAll:
         range0 = np.linspace(lge_min[z], 1.0, int((1.0 - lge_min[z]) * 20))
         range0 = np.delete(range0, [len(range0) - 1])
         range1 = np.linspace(1.0, lge_max[z], int((lge_max[z] - 1.0) * 10))
@@ -50,7 +49,8 @@ if __name__ == '__main__':
             zenith=z,
             BDTcuts=True,
             site=site,
-            nMaxTest=1e5
+            nMaxTest=1e5,
+            array=array,
         )
         ev.loadTreeData()
 
@@ -58,9 +58,6 @@ if __name__ == '__main__':
         ev.loadEnergyEfficiency()
         ev.exportTable()
         events.append(ev)
-
-    def thresholdLabel(thr):
-        return ' (threshold)' if thr else ''
 
     ################
     # Efficiency
@@ -71,13 +68,13 @@ if __name__ == '__main__':
     ax.set_xlabel(r'log$_{10}$($E$/TeV)')
     ax.set_ylabel(r'efficiency, $\epsilon$')
 
-    for ev, thr, c, m in zip(events, threshold, colors, markers):
+    for ev, c, m in zip(events, colors, markers):
         ev.plotEnergyEfficiency(
             color=c,
             linestyle='--',
             marker=m,
             markersize=4,
-            label=r'$\theta$ = ' + str(ev.zenith) + thresholdLabel(thr)
+            label=r'$\theta$ = ' + str(ev.zenith)
         )
 
     ax.legend(frameon=False)
@@ -99,13 +96,13 @@ if __name__ == '__main__':
     ax.set_xlabel(r'log$_{10}$($E$/TeV)')
     ax.set_ylabel(r'$\sigma(\epsilon)/\epsilon$')
 
-    for ev, thr, c, m in zip(events, threshold, colors, markers):
+    for ev, c, m in zip(events, colors, markers):
         ev.plotEnergyEfficiencyRelErr(
             color=c,
             linestyle='--',
             marker=m,
             markersize=4,
-            label=r'$\theta$ = ' + str(ev.zenith) + thresholdLabel(thr)
+            label=r'$\theta$ = ' + str(ev.zenith)
         )
     ax.legend(frameon=False)
     ax.set_ylim(0.001, 0.1)

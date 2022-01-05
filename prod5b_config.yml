@@ -2,7 +2,22 @@ files:
   directory: '/lustre/fs22/group/cta/users/maierg/analysis/AnalysisData/' 
   gamma:
     Paranal:
-      20: 'prod5-Paranal-20deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/gamma_onSource.S-M6D1ag-14MSTs37SSTs-MSTF_ID0.eff-0.root'
+      20:
+        directory: 'prod5-Paranal-20deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/'
+        alpha: 'gamma_onSource.S-M6C5ax-14MSTs37SSTs-MSTF_ID0.eff-0.root'
+        alpha-MSTs: 'gamma_onSource.S.M6-14MSTs-MSTF_ID0.eff-0.root'
+        alpha-SSTs: 'gamma_onSource.S.C5ax-37SSTs_ID0.eff-0.root'
+      40:
+        directory: 'prod5-Paranal-40deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/'
+        alpha: 'gamma_onSource.S-M6C5ax-14MSTs37SSTs-MSTF_ID0.eff-0.root'
+        alpha-MSTs: 'gamma_onSource.S.M6-14MSTs-MSTF_ID0.eff-0.root'
+        alpha-SSTs: 'gamma_onSource.S.C5ax-37SSTs_ID0.eff-0.root'
+      60:
+        directory: 'prod5-Paranal-60deg-sq20-LL/EffectiveAreas/EffectiveArea-50h-ID0-NIM2LST2MST2SST2SCMST2-g20210610-V3/BDT.50h-V3.g20210610/'
+        alpha: 'gamma_onSource.S-M6C5ax-14MSTs37SSTs-MSTF_ID0.eff-0.root'
+        alpha-MSTs: 'gamma_onSource.S.M6-14MSTs-MSTF_ID0.eff-0.root'
+        alpha-SSTs: 'gamma_onSource.S.C5ax-37SSTs_ID0.eff-0.root'
+
 
 scatRadius:
   Paranal:

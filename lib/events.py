@@ -59,11 +59,11 @@ def integrateGaussianPDF(mean, sig, x1, x2):
     return res
 
 
-def fileNameFromConfig(config, primary, site, zenith):
-    direc = config['files']['directory']
-    file = config['files'][primary][site][zenith]
-    return direc + '/' + file
-
+def fileNameFromConfig(config, primary, site, zenith, array='alpha'):
+    file_path = config['files']['directory']
+    file_path += '/' + config['files'][primary][site][zenith]['directory']
+    file_path += '/' + config['files'][primary][site][zenith][array]
+    return file_path
 
 ########################################
 class EventsMC:
@@ -79,7 +79,8 @@ class EventsMC:
         BDTcuts=True,
         test=False,
         nMaxTest=1e2,
-        configFile='prod5b_config.yml'
+        configFile='prod5b_config.yml',
+        array='alpha'
     ):
         self.primary = primary
         self.site = site
@@ -94,6 +95,8 @@ class EventsMC:
             logging.info('BDTcuts on - nFiles set to 1')
         self.test = test
         self.nMaxTest = nMaxTest
+        self.array = 'alpha'
+
         self.data = dict()
         self.dataTelescopes = dict()
 
@@ -151,7 +154,13 @@ class EventsMC:
 
         for n in range(self.nFiles):
 
-            fileName = fileNameFromConfig(self.config, self.primary, self.site, self.zenith)
+            fileName = fileNameFromConfig(
+                self.config,
+                self.primary,
+                self.site,
+                self.zenith,
+                self.array,
+            )
 
             logging.debug('Filename:: {}'.format(fileName))
 
