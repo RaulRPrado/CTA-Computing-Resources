@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import sys
 import logging
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 from matplotlib.backends.backend_pdf import PdfPages
 
 from lib.events import EventsMC
@@ -21,36 +21,61 @@ plt.rc('text', usetex=True)
 
 if __name__ == '__main__':
 
-    show = True if 'show' in sys.argv else False
-    test = True if 'test' in sys.argv else False
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-z',
+        '--zenith',
+        help='Zenith: 20, 40 or 60  Default: [20, 40, 60]',
+        type=float,
+        nargs='+',
+        default=[20, 40, 60]
+    )
+    parser.add_argument(
+        '-s',
+        '--site',
+        help='Site: Paranal or LaPalma - Default: Paranal',
+        type=str,
+        default='Paranal',
+        choices=['Paranal', 'LaPalma']
+    )
+    parser.add_argument(
+        '-a',
+        '--array',
+        help='Array: alpha, alpha-SSTs, alpha-MSTs or alpha-LSTs',
+        type=str,
+        default='alpha',
+        choices=['alpha', 'alpha-SSTs', 'alpha-MSTs', 'alpha-LSTs']
+    )
+    parser.add_argument(
+        '-t',
+        '--test',
+        help='Turns on test mode where only a small fraction of the events will be used',
+        action='store_true'
+    )
+    args = parser.parse_args()
 
-    site = 'LaPalma'
-    # site = 'Paranal'
-    zenithAll = [20, 40, 60]
-    array = 'alpha'
     colors = ['k', 'r', 'b', 'k']
     markers = ['o', '>', '^', 's']
     lge_min = {20: -1.8, 40: -1.6, 60: -1.2}
     lge_max = {20: 2.4, 40: 2.8, 60: 2.8}
 
     events = list()
-    for z in zenithAll:
+    for z in args.zenith:
         range0 = np.linspace(lge_min[z], 1.0, int((1.0 - lge_min[z]) * 20))
         range0 = np.delete(range0, [len(range0) - 1])
         range1 = np.linspace(1.0, lge_max[z], int((lge_max[z] - 1.0) * 10))
         logEnergyBins = (np.concatenate((range0, range1), axis=0))
-        # logEnergyBins = np.linspace(-1.4, 2.0, (2.0 + 1.4) * 20 + 1)
 
         ev = EventsMC(
             nFiles=1,
             primary='gamma',
             logEnergyBins=logEnergyBins,
-            test=test,
+            test=args.test,
             zenith=z,
             BDTcuts=True,
-            site=site,
+            site=args.site,
             nMaxTest=1e5,
-            array=array,
+            array=args.array,
         )
         ev.loadTreeData()
 
@@ -81,11 +106,10 @@ if __name__ == '__main__':
     ylim = ax.get_ylim()
     ax.set_ylim(ylim[0], 1)
 
-    if show:
-        plt.show()
-    else:
-        plt.savefig('figures/Efficiency' + site + '.png', format='png', bbox_inches='tight')
-        plt.savefig('figures/Efficiency' + site + '.pdf', format='pdf', bbox_inches='tight')
+    figName = 'figures/Efficiency' + args.site + '_' + args.array
+    logging.info('Saving figure: {}'.format(figName))
+    plt.savefig(figName + '.png', format='png', bbox_inches='tight')
+    plt.savefig(figName + '.pdf', format='pdf', bbox_inches='tight')
 
     ################
     # Efficiency RelErr
@@ -107,11 +131,10 @@ if __name__ == '__main__':
     ax.legend(frameon=False)
     ax.set_ylim(0.001, 0.1)
 
-    if show:
-        plt.show()
-    else:
-        plt.savefig('figures/EfficiencyRelErr' + site + '.png', format='png', bbox_inches='tight')
-        plt.savefig('figures/EfficiencyRelErr' + site + '.pdf', format='pdf', bbox_inches='tight')
+    figName = 'figures/EfficiencyRelErr' + args.site + '_' + args.array
+    logging.info('Saving figure: {}'.format(figName))
+    plt.savefig(figName + '.png', format='png', bbox_inches='tight')
+    plt.savefig(figName + '.pdf', format='pdf', bbox_inches='tight')
 
     # Not plotting resolutions by now
     exit()
@@ -123,13 +146,13 @@ if __name__ == '__main__':
     ax.set_xlabel(r'log$_{10}$($E$/TeV)')
     ax.set_ylabel(r'$\sigma(E_\mathrm{R})/E_\mathrm{T}$')
 
-    for ev, thr, c, m in zip(events, threshold, colors, markers):
+    for ev, c, m in zip(events, colors, markers):
         ev.plotEnergyResolution(
             color=c,
             linestyle='--',
             marker=m,
             markersize=4,
-            label=r'$\theta$ = ' + str(ev.zenith) + thresholdLabel(thr)
+            label=r'$\theta$ = ' + str(ev.zenith)
         )
     ax.legend(frameon=False)
     ylim = ax.get_ylim()
