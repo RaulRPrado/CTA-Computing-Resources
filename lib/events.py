@@ -95,7 +95,7 @@ class EventsMC:
             logging.info('BDTcuts on - nFiles set to 1')
         self.test = test
         self.nMaxTest = nMaxTest
-        self.array = 'alpha'
+        self.array = array
 
         self.data = dict()
         self.dataTelescopes = dict()
