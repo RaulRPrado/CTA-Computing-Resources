@@ -505,9 +505,10 @@ class EventsMC:
         tableData['sigma_en'] = self.sigmaEnergy
         tableData['delta_en'] = self.deltaEnergy
 
-        thrName = ''
         outName = (
-            'data/eff_' + self.primary + '_' + self.site + thrName + '_z' + str(self.zenith) + '_az'
+            'data/eff_' + self.primary
+            + '_' + self.site + '_' + self.array
+            + '_z' + str(self.zenith) + '_az'
             + str(self.azimuth) + '.cvs'
         )
         ascii.write(Table(tableData), outName, format='basic', overwrite=True)
@@ -551,11 +552,13 @@ class EffectiveArea:
         self.computeEffArea()
 
     def computeEffArea(self):
-        thrName = ''
         fileName = (
-            'data/eff_' + self.primary + '_' + self.site + thrName + '_z' + str(self.zenith) + '_az'
+            'data/eff_' + self.primary
+            + '_' + self.site + '_' + self.array
+            + '_z' + str(self.zenith) + '_az'
             + str(self.azimuth) + '.cvs'
         )
+
         table = dict(ascii.read(fileName, format='basic'))
 
         norm = computeNorm(

@@ -54,6 +54,17 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
+    # Checking for invalid array
+    if args.site == 'Paranal' and args.array == 'alpha-LSTs':
+        msg = 'Invalid array (alpha-LSTs is not available for Paranal site)'
+        logging.error(msg)
+        raise IOError(msg)
+
+    if args.site == 'LaPalma' and args.array == 'alpha-SSTs':
+        msg = 'Invalid array (alpha-SSTs is not available for LaPalma site)'
+        logging.error(msg)
+        raise IOError(msg)
+
     colors = ['k', 'r', 'b', 'k']
     markers = ['o', '>', '^', 's']
     lge_min = {20: -1.8, 40: -1.6, 60: -1.2}
