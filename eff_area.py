@@ -165,8 +165,9 @@ if __name__ == '__main__':
     fig = plt.figure(figsize=(8, 6), tight_layout=True)
 
     ax = plt.gca()
+    ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xlabel(r'log$_{10}$($E$/TeV)')
+    ax.set_xlabel(r'E [TeV]')
     ax.set_ylabel(r'$\sigma(A_\mathrm{eff})/A_\mathrm{eff}$')
 
     for e in effArea:
@@ -174,12 +175,10 @@ if __name__ == '__main__':
 
     ax.legend(frameon=False)
     ax.set_ylim(0.001, 0.5)
-    xlim = [-1.8, 2.8]
+    xlim = np.power(10, logELim[zenith])
     ax.set_xlim(xlim)
     ylim = ax.get_ylim()
-    ax.plot(xlim, [0.02, 0.02], linestyle=':', color='k')
-    ax.plot([log10(0.04), log10(0.04)], ylim, linestyle='--', color='k')
-    ax.plot([2, 2], ylim, linestyle='--', color='k')
+    ax.plot(xlim, [0.1, 0.1], linestyle=':', color='k')
 
     ax.autoscale(tight=True, axis='both')
 

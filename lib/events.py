@@ -672,7 +672,7 @@ class EffectiveArea:
         err_plot = [r / e for (e, r) in zip(self.effArea, self.effAreaErr) if e > 0]
 
         ax.plot(
-            lge_plot,
+            np.power(10, lge_plot),
             err_plot,
             color=self.color,
             marker=self.marker,
